@@ -11,3 +11,12 @@ This is a back-end application that uses Vagrant, Python, Flask, Sqlalchemy, Sql
 5. At this point, you can choose to run the application immediately by entering `python app.py` or run `python db_sim.py` to seed the database with some records first, and then proceed to run `python app.py`
 6. Navigate to `localhost:8000` on your local machine's browser, and enjoy the Flask app. 
 
+## Issues
+The forms need validation
+
+## Improvements
+* Add location data for the airline items
+* Add mathematical logic to show total miles accumualted at the alliance level
+* Compute status 
+* Give the user some profile customization controls and features
+* Leaderboards or community features for traveling on various airlines within the alliances across users
