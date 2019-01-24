@@ -1,0 +1,13 @@
+.jumbotron {
+  color: black;
+  background-image: url("../img/banner.jpg");
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 345px;
+  margin-top: -4px;
+}
+
+.bg-dark {
+  background-color: #000000!important;
+}

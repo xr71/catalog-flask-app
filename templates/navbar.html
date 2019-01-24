@@ -1,0 +1,26 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="{{ url_for('index') }}">Home</a>
+  <a class="navbar-brand text-muted" href="{{ url_for('showAlliancesJson') }}">API</a>
+
+  {% if 'username' not in session %}
+    <a class="btn btn-success ml-auto" href="{{ url_for('login') }}">Sign In</a>
+  {% else %}
+    <a class="text-muted ml-auto" href="#">You are currently logged in as: {{ session.username }}</a>
+    <a class="btn btn-danger ml-auto" href="{{ url_for('gdisconnect') }}">Sign out</a>
+  {% endif %}
+
+</nav>
+
+
+<!-- banner immage credit to https://unsplash.com/photos/P8b0bg-w_YA -->
+<div class="jumbotron">
+  <div class="container">
+    <h2 class="text-white">Welcome to my Udacity Catalog Project - Tracking Global Airline Alliances and Airlines</h2>
+    <p class="text-white">I love to travel! But keeping track of which airlines
+      I've traveled on and which frequent flyer alliance they belong to is difficult.
+      That is the motivation for this catalog webapp. Please login to create your
+      own alliance catalog to track. After login, you will be able to add, edit,
+      and delete alliances and airlines. Enjoy and bon voyage!
+    </p>
+  </div>
+</div>

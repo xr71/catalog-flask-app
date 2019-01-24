@@ -1,0 +1,16 @@
+<div class="col-md-12">
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissable">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <p class=".text-success">
+              <strong>{{ message }}</strong>
+            </p>
+        </div>
+        {% endfor %}
+    </ul>
+    {% endif %}
+{% endwith %}
+</div>

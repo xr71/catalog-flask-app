@@ -1,0 +1,32 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Airline Loyalty Tracking Catalog</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- google login -->
+    <script type="text/javascript" src="https://apis.google.com/js/client:platform.js?onload=start"></script>
+  </head>
+
+  <body>
+
+    {% include "navbar.html" %}
+    {% include "flash_notifications.html" %}
+    <div class="container">
+      <br>
+      <br>
+      {% block content %}
+      {% endblock %}
+      <br>
+      <br>
+    </div>
+
+  </body>
+
+</html>

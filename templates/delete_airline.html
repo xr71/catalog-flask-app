@@ -1,0 +1,27 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="row">
+    <h2>Delete This Airline: {{ airline.name }}?</h2>
+  </div>
+  <div class="row">
+    <div class="col col-md-12">
+      <form method="post" action="{{ url_for('deleteAirline', alliance_id=alliance_id, airline_id=airline.id)}}">
+        <div class="form-group">
+          <div style="margin-top: 1rem">
+            <button type="submit" class="btn btn-danger" id="submit" type="submit">
+              Delete
+            </button>
+            &nbsp;
+            &nbsp;
+              <a href = "{{ url_for('showAirline', alliance_id=alliance_id, airline_id=airline.id) }}">
+                Cancel
+              </a>
+            <br>
+
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

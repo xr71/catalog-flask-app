@@ -1,0 +1,41 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="row">
+    <h2>Add a New Airline</h2>
+  </div>
+
+  <div class="row">
+    <div class="col col-md-12">
+      <form action="{{ url_for('newAirline', alliance_id=alliance.id) }}" method="post">
+        <div class="form-group">
+          <label for="name">Name: </label>
+          <input type="text" class="form-control" name="name" value="Airline name">
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description: </label>
+          <input type="text" class="form-control" name="description" value="A short description about this airline">
+        </div>
+
+        <div class="form-group">
+          <label for="miles">Miles: </label>
+          <input type="text" class="form-control" name="miles" value="How many miles do you have with this airline">
+        </div>
+
+        <div>
+          <button type="submit" name="button" class="btn btn-success" id="submit">
+            Create
+          </button>
+          &nbsp;
+          &nbsp;
+            <a href="{{ url_for('showAlliance', id=alliance.id) }}">
+              Cancel
+            </a>
+          <br>
+
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

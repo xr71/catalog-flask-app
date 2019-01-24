@@ -1,0 +1,24 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="row">
+    <div class="col col-md-12">
+      <h3>Airline Name: {{ airline.name }}</h3>
+      <hr>
+      <h5>Description: </h5>
+      <p>
+        {{ airline.description }}
+      </p>
+      <hr>
+      <p>Miles: {{ airline.miles }}</p>
+      <hr>
+
+      {% if 'username' in session and op.email == session['email'] %}
+        <a href="{{ url_for('editAirline', alliance_id=airline.aid, airline_id=airline.id) }}">Edit</a> |
+        <a href="{{ url_for('deleteAirline', alliance_id=airline.aid, airline_id=airline.id) }}">Delete</a>
+      {% endif %}
+
+    </div>
+
+  </div>
+{% endblock %}

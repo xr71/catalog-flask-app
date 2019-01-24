@@ -1,0 +1,29 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="row">
+    <h2>Add a New Alliance</h2>
+  </div>
+  <div class="row">
+    <div class="col col-md-12">
+      <form method="post" action="{{ url_for('newAlliance')}}">
+        <div class="form-group">
+					<label for="name">Name: </label>
+					<input type ="text" class="form-control" name="name" value="Alliance name">
+					<div style="margin-top: 1rem">
+						<button type="submit" class="btn btn-success" id="submit">
+							Create
+						</button>
+            &nbsp;
+            &nbsp;
+							<a href = "{{ url_for('index') }}">
+								Cancel
+							</a>
+            <br>
+
+					</div>
+				</div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

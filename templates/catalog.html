@@ -1,0 +1,45 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+  <div class="row justify-content-md-center">
+    <div class="col col-md-4">
+      <h2>Alliances</h2>
+      <br>
+      <div class="list-group">
+
+        {% if 'username' in session %}
+          <a class="btn btn-primary" href="{{ url_for('newAlliance') }}">Create new alliance</a>
+        {% endif %}
+
+        {% for alliance in alliances %}
+        <a class="list-group-item" href="{{ url_for('showAlliance', id=alliance.id) }}"" > {{ alliance.name }} </a>
+        {% endfor %}
+       </div>
+    </div>
+    <div class="col col-md-8">
+      <h2>Latest Airlines</h2>
+      <br>
+      <div class="container">
+        {% for airline in latest_airlines %}
+
+        <div class="card">
+          <div class="card-header">
+            <h4>Alliance: {{ airline.alliance.name }}</h4>
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">Airline: {{ airline.name }}</h5>
+            <br>          
+            <a href="{{ url_for('showAirline', alliance_id=airline.aid, airline_id=airline.id) }}" class="btn btn-secondary">See more...</a>
+          </div>
+        </div>
+
+        <br>
+        <hr>
+        <br>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

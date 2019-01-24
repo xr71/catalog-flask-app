@@ -1,0 +1,36 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="row">
+    <div class="col col-md-12">
+      <h3>Alliance Category: {{ alliance.name }} &ndash; {{ airline_count }} airline(s)
+
+        {% if 'username' in session and op.email == session['email'] %}
+        <a href="{{ url_for('editAlliance', alliance_id=alliance.id) }}">Edit</a>
+        |
+        <a href="{{ url_for('deleteAlliance', alliance_id=alliance.id) }}">Delete</a>
+        {% endif %}
+      </h3>
+    </div>
+    <br>
+  </div>
+
+  <br>
+
+  <div class="row">
+    <div class="col col-md-12 mx-auto">
+      <ul class="list-group">
+        {% if 'username' in session and op.email == session['email'] %}
+        <a class="btn btn-primary" href="{{ url_for('newAirline', alliance_id=alliance.id) }}">Create new airline</a>
+        {% endif %}
+
+        {% for airline in airlines %}
+        <a href="{{ url_for('showAirline', alliance_id=airline.aid, airline_id=airline.id) }}">
+          <li class="list-group-item"> {{ airline.name}} </li>
+        </a>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+{% endblock %}
