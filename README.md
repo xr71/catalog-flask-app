@@ -11,6 +11,13 @@ This is a back-end application that uses Vagrant, Python, Flask, Sqlalchemy, Sql
 5. At this point, you can choose to run the application immediately by entering `python app.py` or run `python db_sim.py` to seed the database with some records first, and then proceed to run `python app.py`
 6. Navigate to `localhost:8000` on your local machine's browser, and enjoy the Flask app. 
 
+# JSON Endpoints
+`/api/alliances/JSON`  
+Returns JSON of all items in the database
+
+`/alliance/<int:alliance_id>/airline/<int:airline_id>/JSON`  
+Returns JSON of a single airline  in the database:  where `alliance_id` is an integer ID of the Alliance that the user would like to select, and `airline_id` is an integer ID of the Airline that the user would like to select.
+
 ## Issues
 The forms need validation
 
