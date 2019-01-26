@@ -9,7 +9,7 @@ from flask import (
         flash
     )
 from flask import session as login_session
-from sqlalchemy import create_engine, asc, desc
+from sqlalchemy import create_engine, asc, desc, exc
 from sqlalchemy.orm import sessionmaker
 from config import CLIENT_ID
 
@@ -25,14 +25,15 @@ import httplib2
 
 from db_setup import Base, User, Alliance, Airline
 
-################################################################################
+###############################################################################
 # init
-################################################################################
+###############################################################################
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 
+# create connection to sqlite file
 # for dev
-engine = create_engine('sqlite:///airlines_alliances_catalog.db?check_same_thread=False')
+engine = create_engine('sqlite:///airlines_alliances_catalog.db?check_same_thread=False')  # NOQA
 
 # for prod
 # engine = create_engine('sqlite:///airlines_alliances_catalog.db')
@@ -43,27 +44,30 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
-################################################################################
+###############################################################################
 # logins and authentication section
-################################################################################
+###############################################################################
 
 # helper for checking authentication and registration
 def getUser(uid):
     try:
         return session.query(User).filter_by(id=uid).one()
-    except:
+    except exc.SQLAlchemyError:
         return None
 
 
+# helper for checking if this user is already registered in User
 def isRegistered(email):
     # pass
     # check if the signed in visitor is a registered customer in User
     try:
         uid = session.query(User.id).filter_by(email=email).one()
         return True
-    except:
+    except exc.SQLAlchemyError:
         return False
 
+
+# helper function to register the user
 def registerUser(login_session):
     # pass
     # reigster a new user in the User table based on login session
@@ -78,9 +82,12 @@ def registerUser(login_session):
     uid = session.query(User.id).filter_by(email=email).one()
     return uid[0]
 
+
+# GET - show the login page, along with anti-forgery state variable
 @app.route("/login")
 def login():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+    state = ''.join(random.choice(
+        string.ascii_uppercase + string.digits) for x in xrange(32))
     login_session['state'] = state
 
     # print(login_session)
@@ -88,7 +95,9 @@ def login():
     return render_template("login.html", STATE=state)
     # return "future home of google login"
 
-## reference to Udacity github ud330 step 5
+
+# reference to Udacity github ud330 step 5
+# POST endpoint for connecting to Google OAuth
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Validate state token
@@ -141,7 +150,8 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'), 200)
+        response = make_response(
+            json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -158,7 +168,7 @@ def gconnect():
 
     try:
         login_session['username'] = data['name']
-    except:
+    except NameError:
         login_session["username"] = "Google User"
 
     login_session['picture'] = data['picture']
@@ -170,7 +180,8 @@ def gconnect():
     if not isRegistered(login_session["email"]):
         user_id = registerUser(login_session)
     else:
-        user_id = session.query(User).filter_by(email=login_session["email"]).first()
+        user_id = session.query(User).filter_by(
+            email=login_session["email"]).first()
         user_id = user_id.id
 
     # save the user's id from User table to use later
@@ -182,23 +193,27 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius:'
+    output += ' 150px;-webkit-border-radius:'
+    output += ' 150px;-moz-border-radius: 150px;"> '
     flash("You are now sucessfully logged in ")
     # print "done!"
 
     return output
 
 
+# disconnect endpoint from removing token from Google OAuth
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session.get('access_token')
     if access_token is None:
         print 'Access Token is None'
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']  # NOQA
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
 
@@ -214,28 +229,35 @@ def gdisconnect():
         flash("You are now successfully logged out")
         return redirect(url_for('index'), code=302)
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
     # return "future home of google disconnect"
 
-################################################################################
+###############################################################################
 # views
-################################################################################
+###############################################################################
+
+
+# GET - display the home page and show last 4 airlines added
 @app.route("/")
 def index():
 
     alliances = session.query(Alliance).all()
     # last 4 entries
-    latest_airlines = session.query(Airline).order_by(desc(Airline.id)).limit(4)
+    latest_airlines = session.query(Airline).order_by(
+        desc(Airline.id)).limit(4)
 
     # print(alliances)
     # print(latest_airlines)
 
-    return render_template('catalog.html', alliances=alliances, latest_airlines=latest_airlines)
+    return render_template('catalog.html', alliances=alliances,
+        latest_airlines=latest_airlines)
 
 
+# GET - display one alliance and the airlines in the alliance
 @app.route("/alliance/<int:id>")
 @app.route("/alliance/<int:id>/airlines")
 def showAlliance(id):
@@ -246,29 +268,34 @@ def showAlliance(id):
     op = getUser(one_alliance.uid)
     # print(op)
 
-    return render_template("alliances.html", alliance=one_alliance, airlines=_airlines, airline_count=airline_count, op=op)
+    return render_template("alliances.html", alliance=one_alliance,
+        airlines=_airlines, airline_count=airline_count, op=op)
 
 
+# GET - display the details of one airline
 @app.route('/alliance/<int:alliance_id>/airline/<int:airline_id>')
 def showAirline(alliance_id, airline_id):
-    airline = session.query(Airline).filter_by(**{"id":airline_id, "aid":alliance_id}).first()
+    airline = session.query(Airline).filter_by(
+        **{"id": airline_id, "aid": alliance_id}).first()
     # testing op
     op = getUser(airline.uid)
 
     return render_template('airlines.html', airline=airline, op=op)
 
 
-################################################################################
+###############################################################################
 # CRUD - alliance related
-################################################################################
+###############################################################################
 
+# CREATE - add a new alliance
 @app.route('/alliance/new/', methods=['GET', 'POST'])
 def newAlliance():
     if 'username' not in login_session:
         return redirect('/login')
 
     if request.method == 'POST':
-        newAlliance = Alliance(name=request.form['name'], uid=login_session["user_id"])
+        newAlliance = Alliance(name=request.form['name'],
+            uid=login_session["user_id"])
         session.add(newAlliance)
         session.commit()
         flash('New Alliance %s Successfully Created' % newAlliance.name)
@@ -277,7 +304,9 @@ def newAlliance():
         return render_template('new_alliance.html')
 
 
-@app.route('/alliance/<int:alliance_id>/edit/', methods=['GET', 'POST'])
+# UPDATE - edit an alliance
+@app.route('/alliance/<int:alliance_id>/edit/',
+    methods=['GET', 'POST'])
 def editAlliance(alliance_id):
     if 'username' not in login_session:
         return redirect('/login')
@@ -286,7 +315,8 @@ def editAlliance(alliance_id):
     op = getUser(editedAlliance.uid)
 
     if op.id != login_session["user_id"]:
-        flash("You are not the original creator of this entry. Please sign in as the creator or modify a different etry.")
+        flash("You are not the original creator of this entry."
+            "Please sign in as the creator or modify a different etry.")
         return redirect('/login')
 
     if request.method == 'POST':
@@ -298,7 +328,9 @@ def editAlliance(alliance_id):
         return render_template('edit_alliance.html', alliance=editedAlliance)
 
 
-@app.route('/alliance/<int:alliance_id>/delete/', methods=['GET', 'POST'])
+# DELETE - remove an alliance
+@app.route('/alliance/<int:alliance_id>/delete/',
+methods=['GET', 'POST'])
 def deleteAlliance(alliance_id):
     if 'username' not in login_session:
         return redirect('/login')
@@ -307,7 +339,8 @@ def deleteAlliance(alliance_id):
     op = getUser(allianceToDelete.uid)
 
     if op.id != login_session["user_id"]:
-        flash("You are not the original creator of this entry. Please sign in as the creator or modify a different etry.")
+        flash("You are not the original creator of this entry. "
+            "Please sign in as the creator or modify a different etry.")
         return redirect('/login')
 
     if request.method == 'POST':
@@ -316,27 +349,32 @@ def deleteAlliance(alliance_id):
         flash('%s Successfully deleted' % allianceToDelete.name)
         return redirect(url_for('index'))
     else:
-        return render_template('delete_alliance.html', alliance=allianceToDelete)
+        return render_template('delete_alliance.html',
+            alliance=allianceToDelete)
 
 
-################################################################################
+###############################################################################
 # CRUD - airline related
-################################################################################
+###############################################################################
 
-@app.route('/alliance/<int:alliance_id>/airline/new/', methods=['GET', 'POST'])
+# CREATE - add a new airline
+@app.route('/alliance/<int:alliance_id>/airline/new/',
+    methods=['GET', 'POST'])
 def newAirline(alliance_id):
     if 'username' not in login_session:
         return redirect('/login')
 
     try:
         alliance = session.query(Alliance).filter_by(id=alliance_id).one()
-    except:
-        return "The alliance that you are trying to add an airline to does not exist. Please try again."
+    except exc.SQLAlchemyError:
+        return "The alliance that you are trying to add an" \
+            " airline to does not exist. Please try again."
 
     op = getUser(alliance.uid)
 
     if op.id != login_session["user_id"]:
-        flash("You are not the original creator of this entry. Please sign in as the creator or modify a different etry.")
+        flash("You are not the original creator of this entry. "
+            "Please sign in as the creator or modify a different etry.")
         return redirect('/login')
 
     if request.method == 'POST':
@@ -354,16 +392,20 @@ def newAirline(alliance_id):
         return render_template('new_airline.html', alliance=alliance)
 
 
-@app.route('/alliance/<int:alliance_id>/airline/<int:airline_id>/edit/', methods=['GET', 'POST'])
+# UPDATE - edit an airline
+@app.route('/alliance/<int:alliance_id>/airline/<int:airline_id>/edit/',
+    methods=['GET', 'POST'])
 def editAirline(alliance_id, airline_id):
     if 'username' not in login_session:
         return redirect('/login')
 
-    editedAirline = session.query(Airline).filter_by(**{"id":airline_id, "aid":alliance_id}).one()
+    editedAirline = session.query(Airline).filter_by(
+        **{"id": airline_id, "aid": alliance_id}).one()
     op = getUser(editedAirline.uid)
 
     if op.id != login_session["user_id"]:
-        flash("You are not the original creator of this entry. Please sign in as the creator or modify a different etry.")
+        flash("You are not the original creator of this entry. "
+            "Please sign in as the creator or modify a different etry.")
         return redirect('/login')
 
     if request.method == 'POST':
@@ -372,22 +414,29 @@ def editAirline(alliance_id, airline_id):
             editedAirline.description = request.form["description"]
             editedAirline.miles = request.form["miles"]
             flash('Airline successfully edited %s' % editedAirline.name)
-            return redirect(url_for('showAirline', alliance_id=alliance_id, airline_id=editedAirline.id))
+            return redirect(
+                url_for('showAirline', alliance_id=alliance_id,
+                airline_id=editedAirline.id))
         # return "future home of airline edit"
     else:
-        return render_template('edit_airline.html', alliance_id=alliance_id, airline=editedAirline)
+        return render_template('edit_airline.html',
+            alliance_id=alliance_id, airline=editedAirline)
 
 
-@app.route('/alliance/<int:alliance_id>/airline/<int:airline_id>/delete/', methods=['GET', 'POST'])
+# DELETE - remove an airline
+@app.route('/alliance/<int:alliance_id>/airline/<int:airline_id>/delete/',
+    methods=['GET', 'POST'])
 def deleteAirline(alliance_id, airline_id):
     if 'username' not in login_session:
         return redirect('/login')
 
-    airlineToDelete = session.query(Airline).filter_by(**{"id":airline_id, "aid":alliance_id}).one()
+    airlineToDelete = session.query(Airline).filter_by(
+        **{"id": airline_id, "aid": alliance_id}).one()
     op = getUser(airlineToDelete.uid)
 
     if op.id != login_session["user_id"]:
-        flash("You are not the original creator of this entry. Please sign in as the creator or modify a different etry.")
+        flash("You are not the original creator of this entry. "
+            "Please sign in as the creator or modify a different etry.")
         return redirect('/login')
 
     if request.method == "POST":
@@ -397,12 +446,16 @@ def deleteAirline(alliance_id, airline_id):
         return redirect(url_for('showAlliance', id=alliance_id))
         # return "future home of airline delete"
     else:
-        return render_template("delete_airline.html", alliance_id=alliance_id, airline=airlineToDelete)
+        return render_template("delete_airline.html",
+            alliance_id=alliance_id, airline=airlineToDelete)
 
-################################################################################
+###############################################################################
 # API - JSON endpoints
-################################################################################
-@app.route("/api/alliances.json")
+###############################################################################
+
+
+# JSON endpoint for all items in database
+@app.route("/api/alliances/JSON")
 def showAlliancesJson():
     alliances = session.query(Alliance).all()
     output = []
@@ -419,8 +472,18 @@ def showAlliancesJson():
     return jsonify(output)
 
 
-################################################################################
+# JSON endpoint for one airline in database
+@app.route("/alliance/<int:alliance_id>/airline/<int:airline_id>/JSON")
+def showAirlineJson(alliance_id, airline_id):
+    airline = session.query(Airline).filter_by(
+        **{"id": airline_id, "aid": alliance_id}).one()
+
+    return jsonify([airline.serialize])
+
+###############################################################################
 # run
-################################################################################
+###############################################################################
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)

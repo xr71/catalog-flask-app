@@ -9,7 +9,7 @@
       <form method="post" action="{{ url_for('editAlliance', alliance_id=alliance.id)}}">
         <div class="form-group">
 					<label for="name">Name: </label>
-					<input type ="text" class="form-control" name="name" value="{{ alliance.name }}">
+					<input type ="text" class="form-control" name="name" value="{{ alliance.name }} required">
 					<div style="margin-top: 1rem">
 				  	<button type="submit" class="btn btn-success" id="submit" type="submit">
 							Update
